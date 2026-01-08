@@ -34,11 +34,7 @@ class VServeApp extends StatelessWidget {
           foregroundColor: Colors.white,
           elevation: 0,
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
-        ),
+
       ),
       initialRoute: '/',
       routes: {
