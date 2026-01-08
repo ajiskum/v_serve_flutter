@@ -18,11 +18,11 @@ class WorkerListScreen extends StatefulWidget {
 
 class _WorkerListScreenState extends State<WorkerListScreen> {
 
-  void _navigateToDetail(BuildContext context, Worker worker) {
+  void _navigateToDetail(BuildContext context, Worker worker, Service service) {
     Navigator.pushNamed(
       context, 
       '/worker_detail',
-      arguments: worker,
+      arguments: {'worker': worker, 'service': service},
     );
   }
 
@@ -245,9 +245,9 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                                   child: const Text('Track Worker'),
                                 )
                             ] else
-                              ElevatedButton(
-                                onPressed: () => _bookWorker(context, worker, service),
-                                style: ElevatedButton.styleFrom(
+                              OutlinedButton(
+                              onPressed: () => _navigateToDetail(context, worker, service),
+                              style: OutlinedButton.styleFrom(
                                   backgroundColor: Colors.black,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

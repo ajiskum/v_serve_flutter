@@ -19,6 +19,14 @@ List<User> mockUsers = [
     name: 'Senthil',
     phone: '9876543212',
     villageId: 'v3',
+    email: 'senthil@example.com',
+  ),
+  User(
+    id: 'u999',
+    name: 'Demo Hero',
+    phone: '5555555555',
+    villageId: 'v1', // Same as Demo Worker
+    email: 'demo@example.com',
   ),
 ];
 

@@ -31,6 +31,17 @@ List<Worker> mockWorkers = [
     completedJobs: 10,
     experience: 2,
   ),
+  Worker(
+    id: 'w999',
+    name: 'Demo Hero',
+    phone: '5555555555',
+    villageId: 'v1',
+    skills: ['Plumbing', 'Electrical'],
+    rating: 5.0,
+    completedJobs: 99,
+    experience: 10,
+    isAvailable: true,
+  ),
 ];
 
 void addWorker(Worker worker) {
