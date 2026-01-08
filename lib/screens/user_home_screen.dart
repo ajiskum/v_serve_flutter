@@ -5,6 +5,7 @@ import '../utils/session.dart';
 import '../mock_data/services.dart';
 import '../mock_data/categories.dart';
 import '../mock_data/villages.dart';
+import '../models/village.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
