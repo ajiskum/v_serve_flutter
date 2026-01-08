@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../utils/language.dart';
 import '../utils/constants.dart';
 import '../utils/session.dart';
-import '../mock_data/services.dart';
 import '../mock_data/categories.dart';
 import '../mock_data/villages.dart';
 import '../models/village.dart';
@@ -42,79 +41,70 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(Language.get('user')),
-            if (Session.currentUser != null)
+            if (Session.currentUser != null) ...[
               Text(
-                '${Session.currentUser.name} • $_villageName',
+                'Hello, ${Session.currentUser.name}',
+                 style: const TextStyle(fontSize: 18),
+              ),
+              Text(
+                '📍 $_villageName',
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
               ),
+            ] else ...[
+               Text(Language.get('user')),
+            ]
           ],
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         children: [
-          Text(
-            Language.get('categories'),
+          const Text(
+            'Service Categories',
             style: AppTextStyles.heading,
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 120,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: mockCategories.length,
-              itemBuilder: (context, index) {
-                final category = mockCategories[index];
-                return Card(
-                  margin: const EdgeInsets.only(right: 16),
-                  child: InkWell(
-                    onTap: () => _navigateToServiceList(category.id, category.name),
-                    child: Container(
-                      width: 100,
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.category, size: 32, color: AppColors.primary),
-                          const SizedBox(height: 8),
-                          Text(
-                            category.name,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.caption,
+          // Changed to Vertical List of Cards for better visibility of 5 main categories
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: mockCategories.length,
+            itemBuilder: (context, index) {
+              final category = mockCategories[index];
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.only(bottom: 16),
+                child: InkWell(
+                  onTap: () => _navigateToServiceList(category.id, category.name),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        // Placeholder for Icon if asset not available, else use IconData
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ],
-                      ),
+                          child: Icon(Icons.handyman, color: AppColors.primary), // Default icon
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            category.name,
+                            style: AppTextStyles.subHeading,
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Popular Services',
-            style: AppTextStyles.heading,
-          ),
-          const SizedBox(height: 16),
-          ...mockServices.take(3).map((service) => Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: AppColors.primary.withOpacity(0.1),
-                child: Text(service.name[0]),
-              ),
-              title: Text(service.name),
-              subtitle: Text(service.description),
-              trailing: Text(
-                '₹${service.price}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
                 ),
-              ),
-            ),
-          )).toList(),
+              );
+            },
+          ),
         ],
       ),
     );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../utils/language.dart';
-import '../utils/constants.dart';
+import '../mock_data/admins.dart';
 import '../mock_data/users.dart';
 import '../mock_data/workers.dart';
-import '../mock_data/admins.dart';
+import '../utils/language.dart';
+import '../utils/constants.dart';
 import '../utils/session.dart';
 import 'user_registration_screen.dart';
 import 'worker_registration_screen.dart';
@@ -17,49 +17,80 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  
+  bool _isOtpSent = false;
   String _errorMessage = '';
 
-  void _login() {
+  void _sendOtp() {
     if (_formKey.currentState!.validate()) {
       final phone = _phoneController.text.trim();
       
-      // Check Admins first
-      final admin = mockAdmins.firstWhere(
-        (a) => a.phone == phone,
-        orElse: () => mockAdmins.firstWhere((a) => a.id == 'not_found', orElse: () => mockAdmins[0]), // Safe fallback logic handled by checks below
-      );
+      // Check if phone exists in any list
+      bool exists = false;
       
-      // Since firstWhere orElse is tricky with typed lists if not nullable, using a loop or simple where check is safer.
-      // Let's iterate simply.
-      
-      for (var admin in mockAdmins) {
-        if (admin.phone == phone) {
-           Session.currentUser = admin;
-           Navigator.pushNamedAndRemoveUntil(context, '/admin_home', (route) => false);
-           return;
-        }
-      }
+      // Check Admins
+      if (mockAdmins.any((a) => a.phone == phone)) exists = true;
+      // Check Users
+      if (!exists && mockUsers.any((u) => u.phone == phone)) exists = true;
+      // Check Workers
+      if (!exists && mockWorkers.any((w) => w.phone == phone)) exists = true;
 
-      for (var user in mockUsers) {
-        if (user.phone == phone) {
-           Session.currentUser = user;
-           Navigator.pushNamedAndRemoveUntil(context, '/user_home', (route) => false);
-           return;
-        }
-      }
-
-       for (var worker in mockWorkers) {
-        if (worker.phone == phone) {
-           Session.currentUser = worker;
-           Navigator.pushNamedAndRemoveUntil(context, '/worker_home', (route) => false);
-           return;
-        }
+      if (!exists) {
+        setState(() {
+          _errorMessage = 'Phone number not registered. Please register below.';
+        });
+        return;
       }
 
       setState(() {
-        _errorMessage = 'Phone number not registered. Please register below.';
+        _errorMessage = '';
+        _isOtpSent = true;
       });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('OTP Sent! (Use 123456)')),
+      );
+    }
+  }
+
+  void _verifyOtp() {
+    final otp = _otpController.text.trim();
+    if (otp == '123456') {
+      _login();
+    } else {
+      setState(() {
+        _errorMessage = 'Invalid OTP. Please enter 123456';
+      });
+    }
+  }
+
+  void _login() {
+    final phone = _phoneController.text.trim();
+
+    for (var admin in mockAdmins) {
+      if (admin.phone == phone) {
+          Session.currentUser = admin;
+          Navigator.pushNamedAndRemoveUntil(context, '/admin_home', (route) => false);
+          return;
+      }
+    }
+
+    for (var user in mockUsers) {
+      if (user.phone == phone) {
+          Session.currentUser = user;
+          Navigator.pushNamedAndRemoveUntil(context, '/user_home', (route) => false);
+          return;
+      }
+    }
+
+      for (var worker in mockWorkers) {
+      if (worker.phone == phone) {
+          Session.currentUser = worker;
+          Navigator.pushNamedAndRemoveUntil(context, '/worker_home', (route) => false);
+          return;
+      }
     }
   }
 
@@ -98,9 +129,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
+              
+              // Phone Input
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
+                enabled: !_isOtpSent,
                 decoration: const InputDecoration(
                   labelText: 'Phone Number',
                   border: OutlineInputBorder(),
@@ -113,6 +147,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
+
+              // OTP Input (Visible only after sending)
+              if (_isOtpSent)
+                TextFormField(
+                  controller: _otpController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter OTP',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                ),
+
               if (_errorMessage.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text(
@@ -122,18 +170,36 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
               const SizedBox(height: 24),
+              
+              // Action Button
               ElevatedButton(
-                onPressed: _login,
+                onPressed: _isOtpSent ? _verifyOtp : _sendOtp,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: Text(
-                  Language.get('login').toUpperCase(),
+                  _isOtpSent ? 'VERIFY & LOGIN' : 'SEND OTP',
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
+              
+              // Edit Phone (if OTP sent)
+              if (_isOtpSent)
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isOtpSent = false;
+                      _errorMessage = '';
+                      _otpController.clear();
+                    });
+                  },
+                  child: const Text('Change Phone Number'),
+                ),
+
               const SizedBox(height: 32),
+              
+              // Registration Links
               const Row(
                 children: [
                    Expanded(child: Divider()),
