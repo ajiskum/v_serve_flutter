@@ -9,8 +9,14 @@ import '../models/worker.dart';
 import '../models/village.dart';
 import '../models/service_request.dart';
 
-class WorkerListScreen extends StatelessWidget {
+class WorkerListScreen extends StatefulWidget {
   const WorkerListScreen({super.key});
+
+  @override
+  State<WorkerListScreen> createState() => _WorkerListScreenState();
+}
+
+class _WorkerListScreenState extends State<WorkerListScreen> {
 
   void _navigateToDetail(BuildContext context, Worker worker) {
     Navigator.pushNamed(
@@ -18,6 +24,31 @@ class WorkerListScreen extends StatelessWidget {
       '/worker_detail',
       arguments: worker,
     );
+  }
+
+  void _navigateToTracking(BuildContext context, ServiceRequest request) {
+    Navigator.pushNamed(
+      context,
+      '/tracking',
+      arguments: request,
+    );
+  }
+
+  // Helper to check if a request exists
+  ServiceRequest? _getExistingRequest(String workerId, String serviceId) {
+    final currentUser = Session.currentUser;
+    if (currentUser == null) return null;
+
+    try {
+      return mockServiceRequests.firstWhere((req) => 
+        req.userId == currentUser.id && 
+        req.workerId == workerId &&
+        req.serviceId == serviceId &&
+        ['pending', 'accepted'].contains(req.status)
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   void _bookWorker(BuildContext context, Worker worker, Service service) {
@@ -37,7 +68,9 @@ class WorkerListScreen extends StatelessWidget {
       status: 'pending',
     );
 
-    addServiceRequest(newRequest);
+    setState(() {
+       addServiceRequest(newRequest);
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -71,7 +104,7 @@ class WorkerListScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Light grey bg for cards to pop
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Workers for ${service.name}', style: const TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
@@ -86,6 +119,9 @@ class WorkerListScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final worker = skilledWorkers[index];
                 final isSameVillage = worker.villageId == currentUserVillage;
+                
+                // Check if already booked
+                final existingRequest = _getExistingRequest(worker.id, service.id);
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -102,7 +138,7 @@ class WorkerListScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      // Header: Name, Verified Badge, Rating
+                      // Header
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
@@ -128,7 +164,6 @@ class WorkerListScreen extends StatelessWidget {
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                       ),
                                       const SizedBox(width: 6),
-                                      // Verified Badge
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                         decoration: BoxDecoration(
@@ -153,7 +188,7 @@ class WorkerListScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Column(
+                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Container(
@@ -170,8 +205,6 @@ class WorkerListScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text('${worker.completedJobs} Jobs', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
                               ],
                             ),
                           ],
@@ -180,52 +213,47 @@ class WorkerListScreen extends StatelessWidget {
                       
                       const Divider(height: 1),
                       
-                      // Footer: Location Badge + Actions
+                      // Footer
                       Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Row(
                           children: [
-                            if (isSameVillage)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.green[50],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text('Your Village', style: TextStyle(color: Colors.green[700], fontSize: 11, fontWeight: FontWeight.w600)),
-                              )
-                             else
-                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text('Nearby', style: TextStyle(color: Colors.grey[700], fontSize: 11, fontWeight: FontWeight.w600)),
-                              ),
-                            
+                             Text(
+                               isSameVillage ? 'Your Village' : 'Nearby',
+                               style: TextStyle(
+                                 color: isSameVillage ? Colors.green[700] : Colors.grey[700], 
+                                 fontWeight: FontWeight.bold,
+                                 fontSize: 12
+                               ),
+                             ),
                             const Spacer(),
                             
-                            OutlinedButton(
-                              onPressed: () => _navigateToDetail(context, worker),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: Colors.grey[300]!),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                visualDensity: VisualDensity.compact,
+                            if (existingRequest != null) ...[
+                              if (existingRequest.status == 'pending')
+                                ElevatedButton(
+                                  onPressed: null, // Disabled
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[300]), // Grey
+                                  child: const Text('Request Sent', style: TextStyle(color: Colors.black54)),
+                                )
+                              else if (existingRequest.status == 'accepted')
+                                ElevatedButton(
+                                  onPressed: () => _navigateToTracking(context, existingRequest),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.success, 
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('Track Worker'),
+                                )
+                            ] else
+                              ElevatedButton(
+                                onPressed: () => _bookWorker(context, worker, service),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text('Book Now'),
                               ),
-                              child: const Text('View Profile', style: TextStyle(color: Colors.black)),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton(
-                              onPressed: () => _bookWorker(context, worker, service),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black, // Premium Black
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              child: const Text('Book Now'),
-                            ),
                           ],
                         ),
                       ),

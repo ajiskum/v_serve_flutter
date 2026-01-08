@@ -8,6 +8,7 @@ import 'screens/worker_list_screen.dart';
 import 'screens/worker_detail_screen.dart';
 import 'screens/user_profile_screen.dart';
 import 'screens/my_bookings_screen.dart';
+import 'screens/tracking_screen.dart';
 import 'utils/constants.dart';
 
 void main() {
@@ -48,6 +49,7 @@ class VServeApp extends StatelessWidget {
         '/worker_detail': (context) => const WorkerDetailScreen(),
         '/user_profile': (context) => const UserProfileScreen(),
         '/my_bookings': (context) => const MyBookingsScreen(),
+        '/tracking': (context) => const TrackingScreen(),
       },
     );
   }
