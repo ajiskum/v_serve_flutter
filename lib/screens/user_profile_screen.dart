@@ -4,6 +4,7 @@ import '../utils/session.dart';
 import '../utils/language.dart';
 import '../models/user.dart';
 import '../mock_data/villages.dart';
+import '../mock_data/workers.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -23,20 +24,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     setState(() {
       Language.toggleLanguage();
     });
-    // Find ancestor to rebuild app if needed, or just set string.
-    // For this simple app, setState here rebuilds this screen.
-    // Global rebuild might be needed for other screens if not reloaded.
-    // But since we navigate back, main screens might need to listen.
-    // For now, this toggles the singleton.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Language changed to ${Language.currentLanguage}')),
     );
   }
 
+  void _switchToWorkerMode() {
+    final phone = Session.currentUser?.phone;
+    if (phone == null) return;
+
+    // Check if worker profile exists
+    try {
+      final workerProfile = mockWorkers.firstWhere((w) => w.phone == phone);
+      
+      // Switch Session
+      Session.currentUser = workerProfile;
+      
+      // Navigate
+      Navigator.pushNamedAndRemoveUntil(context, '/worker_home', (route) => false);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Switched to Partner Mode')),
+      );
+    } catch (e) {
+      // Not a worker
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No Partner Account found. Please register as a Worker first.')),
+      );
+    }
+  }
+
   String _getVillageName() {
     if (Session.currentUser != null && Session.currentUser is User) {
        final villageId = (Session.currentUser as User).villageId;
-       return mockVillages.firstWhere((v) => v.id == villageId).name;
+       return mockVillages.firstWhere((v) => v.id == villageId, orElse: () => Village(id: '', name: '', district: '')).name;
     }
     return '';
   }
@@ -105,6 +126,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               child: Column(
                 children: [
                   _buildSettingsTile(
+                    icon: Icons.work_outline,
+                    title: 'Switch to Partner Mode',
+                    subtitle: 'For Workers & Service Providers',
+                    onTap: _switchToWorkerMode,
+                    trailing: const Icon(Icons.swap_horiz, color: AppColors.primary),
+                  ),
+                  _buildSettingsTile(
+                    icon: Icons.history,
+                    title: 'My Bookings',
+                    subtitle: 'Track your requests',
+                    onTap: () {
+                       Navigator.pushNamed(context, '/my_bookings');
+                    },
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  ),
+                  _buildSettingsTile(
                     icon: Icons.language,
                     title: 'Change Language',
                     subtitle: Language.currentLanguage == 'en' ? 'English' : 'Tamil',
@@ -116,16 +153,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     title: 'Phone Number',
                     subtitle: user?.phone ?? '',
                     onTap: () {}, // No action
-                  ),
-                  _buildSettingsTile(
-                    icon: Icons.history,
-                    title: 'My Bookings',
-                    subtitle: 'View past service requests',
-                    onTap: () {
-                       // Future: Navigate to booking history
-                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Booking History coming soon!')));
-                    },
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   ),
                   
                   const SizedBox(height: 32),

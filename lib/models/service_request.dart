@@ -19,6 +19,22 @@ class ServiceRequest {
     this.notes = '',
   });
 
+  ServiceRequest copyWith({
+    String? status,
+    DateTime? completedAt,
+  }) {
+    return ServiceRequest(
+      id: id,
+      userId: userId,
+      workerId: workerId,
+      serviceId: serviceId,
+      createdAt: createdAt,
+      status: status ?? this.status,
+      completedAt: completedAt ?? this.completedAt,
+      notes: notes,
+    );
+  }
+
   factory ServiceRequest.fromJson(Map<String, dynamic> json) {
     return ServiceRequest(
       id: json['id'] as String,
