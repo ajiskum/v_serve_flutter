@@ -16,6 +16,7 @@ jobs:
           channel: 'stable'
       
       - run: flutter config --enable-web
+      - run: flutter create .
       - run: flutter pub get
       - run: flutter build web --release --base-href "/v_serve_flutter/"
 
