@@ -29,6 +29,12 @@ class ServiceListScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+           IconButton(
+             onPressed: () => Navigator.pushNamed(context, '/user_profile'), 
+             icon: const Icon(Icons.person_pin, color: AppColors.primary)
+           ),
+        ],
       ),
       body: services.isEmpty 
           ? const Center(child: Text('No services found'))

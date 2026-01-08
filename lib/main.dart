@@ -51,22 +51,6 @@ class VServeApp extends StatelessWidget {
         '/my_bookings': (context) => const MyBookingsScreen(),
         '/tracking': (context) => const TrackingScreen(),
       },
-      builder: (context, child) {
-        return Container(
-          color: Colors.grey[200], // Background for PC/Web
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: ClipRect(
-                child: Container(
-                  color: Colors.white,
-                  child: child,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
