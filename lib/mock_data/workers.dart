@@ -1,6 +1,6 @@
 import '../models/worker.dart';
 
-final List<Worker> mockWorkers = [
+List<Worker> mockWorkers = [
   Worker(
     id: 'w1',
     name: 'Muthu',
@@ -9,6 +9,7 @@ final List<Worker> mockWorkers = [
     skills: ['Plumbing', 'Electrical'],
     rating: 4.5,
     completedJobs: 15,
+    experience: 5,
   ),
   Worker(
     id: 'w2',
@@ -18,6 +19,7 @@ final List<Worker> mockWorkers = [
     skills: ['Carpenter'],
     rating: 4.8,
     completedJobs: 30,
+    experience: 8,
   ),
   Worker(
     id: 'w3',
@@ -27,5 +29,10 @@ final List<Worker> mockWorkers = [
     skills: ['Gardening', 'Cleaning'],
     rating: 4.2,
     completedJobs: 10,
+    experience: 2,
   ),
 ];
+
+void addWorker(Worker worker) {
+  mockWorkers.add(worker);
+}

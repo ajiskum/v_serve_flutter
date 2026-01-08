@@ -8,6 +8,8 @@ class Worker {
   final double rating;
   final int completedJobs;
 
+  final int experience;
+
   Worker({
     required this.id,
     required this.name,
@@ -17,6 +19,7 @@ class Worker {
     this.isAvailable = true,
     this.rating = 0.0,
     this.completedJobs = 0,
+    this.experience = 0,
   });
 
   factory Worker.fromJson(Map<String, dynamic> json) {
@@ -29,6 +32,7 @@ class Worker {
       isAvailable: json['isAvailable'] as bool? ?? true,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       completedJobs: json['completedJobs'] as int? ?? 0,
+      experience: json['experience'] as int? ?? 0,
     );
   }
 
@@ -42,6 +46,7 @@ class Worker {
       'isAvailable': isAvailable,
       'rating': rating,
       'completedJobs': completedJobs,
+      'experience': experience,
     };
   }
 }

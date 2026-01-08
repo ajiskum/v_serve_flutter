@@ -1,6 +1,6 @@
 import '../models/user.dart';
 
-final List<User> mockUsers = [
+List<User> mockUsers = [
   User(
     id: 'u1',
     name: 'Ravi Kumar',
@@ -21,3 +21,7 @@ final List<User> mockUsers = [
     villageId: 'v3',
   ),
 ];
+
+void addUser(User user) {
+  mockUsers.add(user);
+}

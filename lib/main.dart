@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/role_selection_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/user_home_screen.dart';
 import 'screens/worker_home_screen.dart';
 import 'screens/admin_home_screen.dart';
@@ -33,7 +33,7 @@ class VServeApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const RoleSelectionScreen(),
+        '/': (context) => const LoginScreen(),
         '/user_home': (context) => const UserHomeScreen(),
         '/worker_home': (context) => const WorkerHomeScreen(),
         '/admin_home': (context) => const AdminHomeScreen(),
