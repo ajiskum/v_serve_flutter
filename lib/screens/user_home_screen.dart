@@ -44,134 +44,227 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Icons.category;
   }
   
-  // Helper for gradient colors per category
-  List<Color> _getCategoryColors(int index) {
-    const gradients = [
-      [Color(0xFF6366F1), Color(0xFF4F46E5)], // Indigo
-      [Color(0xFFEC4899), Color(0xFFDB2777)], // Pink
-      [Color(0xFF10B981), Color(0xFF059669)], // Emerald
-      [Color(0xFFF59E0B), Color(0xFFD97706)], // Amber
-      [Color(0xFF8B5CF6), Color(0xFF7C3AED)], // Violet
+  // Helper for colors
+  Color _getCategoryColor(int index) {
+     const colors = [
+      Color(0xFFE0E7FF), // Indigo Light
+      Color(0xFFFCE7F3), // Pink Light
+      Color(0xFFD1FAE5), // Emerald Light
+      Color(0xFFFEF3C7), // Amber Light
+      Color(0xFFEDE9FE), // Violet Light
     ];
-    return gradients[index % gradients.length];
+    return colors[index % colors.length];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
           children: [
-            if (Session.currentUser != null) ...[
-              Text(
-                'Hello, ${Session.currentUser.name}',
-                 style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              Row(
-                children: [
-                  Icon(Icons.location_on, size: 12, color: Colors.white70),
-                  const SizedBox(width: 4),
-                  Text(
-                    _villageName,
-                    style: const TextStyle(fontSize: 12, color: Colors.white70),
-                  ),
-                ],
-              ),
-            ] else ...[
-               Text(Language.get('user')),
-            ]
+             // 1. Custom Header & Location
+             Padding(
+               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+               child: Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                 children: [
+                   Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       Row(
+                         children: [
+                           const Icon(Icons.location_on, color: AppColors.primary, size: 20),
+                           const SizedBox(width: 4),
+                           Text(
+                             _villageName.isEmpty ? 'Select Location' : _villageName,
+                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                           ),
+                           const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                         ],
+                       ),
+                       Text(
+                         Session.currentUser?.name ?? 'Guest',
+                         style: const TextStyle(color: Colors.grey, fontSize: 12),
+                       ),
+                     ],
+                   ),
+                   GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/user_profile').then((_) => setState(() {}));
+                    },
+                     child: CircleAvatar(
+                       radius: 18,
+                       backgroundColor: AppColors.primary.withOpacity(0.1),
+                       child: Text(
+                         Session.currentUser?.name?[0] ?? 'U',
+                         style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                       ),
+                     ),
+                   ),
+                 ],
+               ),
+             ),
+             
+             // 2. Sticky Search Bar
+             Padding(
+               padding: const EdgeInsets.all(16.0),
+               child: Container(
+                 padding: const EdgeInsets.symmetric(horizontal: 16),
+                 height: 50,
+                 decoration: BoxDecoration(
+                   color: Colors.grey[100],
+                   borderRadius: BorderRadius.circular(12),
+                   border: Border.all(color: Colors.grey[300]!),
+                 ),
+                 child: Row(
+                   children: [
+                     const Icon(Icons.search, color: Colors.grey),
+                     const SizedBox(width: 12),
+                     Text(
+                       'Search for services...',
+                       style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                     ),
+                   ],
+                 ),
+               ),
+             ),
+             
+             // Scrollable Content
+             Expanded(
+               child: SingleChildScrollView(
+                 padding: const EdgeInsets.symmetric(horizontal: 16),
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     // 3. Promo Banners
+                     SizedBox(
+                       height: 160,
+                       child: ListView(
+                         scrollDirection: Axis.horizontal,
+                         children: [
+                           _buildBanner(
+                             Colors.black87, 
+                             'Get 50% Off\nOn First Booking', 
+                             'Use Code: NEW50',
+                             Icons.local_offer
+                           ),
+                           const SizedBox(width: 16),
+                           _buildBanner(
+                             AppColors.secondary, 
+                             'Quick Home\nCleaning', 
+                             'Starts @ ₹499',
+                             Icons.cleaning_services
+                           ),
+                         ],
+                       ),
+                     ),
+                     const SizedBox(height: 24),
+                     
+                     // 4. Categories (Grid)
+                     const Text(
+                       'All Services',
+                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                     ),
+                     const SizedBox(height: 16),
+                     GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3, // 3 columns looks more like apps
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 24,
+                          childAspectRatio: 0.8,
+                        ),
+                        itemCount: mockCategories.length,
+                        itemBuilder: (context, index) {
+                          final category = mockCategories[index];
+                          final color = _getCategoryColor(index);
+                          
+                          return InkWell(
+                            onTap: () => _navigateToServiceList(category.id, category.name),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 60,
+                                  width: 60,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    _getCategoryIcon(category.name),
+                                    color: AppColors.textPrimary,
+                                    size: 28,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  category.name,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 12, 
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                     ),
+                     const SizedBox(height: 32),
+                   ],
+                 ),
+               ),
+             ),
           ],
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, '/user_profile').then((_) => setState(() {}));
-              },
-              child: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Text(
-                  Session.currentUser?.name?[0] ?? 'U',
-                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          )
-        ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  Widget _buildBanner(Color color, String title, String subtitle, IconData icon) {
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(AppConstants.defaultPadding),
-            child: Text(
-              Language.get('categories'),
-              style: AppTextStyles.heading,
-            ),
-          ),
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.1,
-              ),
-              itemCount: mockCategories.length,
-              itemBuilder: (context, index) {
-                final category = mockCategories[index];
-                final colors = _getCategoryColors(index);
-                
-                return InkWell(
-                  onTap: () => _navigateToServiceList(category.id, category.name),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: colors,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colors[0].withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _getCategoryIcon(category.name),
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            category.name,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white, 
+                    fontSize: 18, 
+                    fontWeight: FontWeight.bold
                   ),
-                );
-              },
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
+          Icon(icon, color: Colors.white.withOpacity(0.3), size: 60),
         ],
       ),
     );
