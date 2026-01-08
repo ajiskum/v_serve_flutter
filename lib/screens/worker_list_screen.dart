@@ -237,9 +237,11 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
   }
 
   Widget widgetButtons(BuildContext context, ServiceRequest? existingRequest, Worker worker, Service service) {
+    Widget statusButton;
+
     if (existingRequest != null) {
       if (existingRequest.status == 'pending') {
-        return ElevatedButton(
+         statusButton = ElevatedButton(
           onPressed: null,
           style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[300], 
@@ -248,7 +250,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           child: const Text('Sent', style: TextStyle(color: Colors.black54)),
         );
       } else if (existingRequest.status == 'accepted') {
-        return ElevatedButton(
+        statusButton = ElevatedButton(
           onPressed: () => _navigateToTracking(context, existingRequest),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.success, 
@@ -257,21 +259,11 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           ),
           child: const Text('Track'),
         );
+      } else {
+         statusButton = const SizedBox.shrink(); // Should not happen for active list logic but just in case
       }
-    }
-    
-    return Row(
-      children: [
-        OutlinedButton(
-          onPressed: () => _navigateToDetail(context, worker, service),
-          style: OutlinedButton.styleFrom(
-             minimumSize: const Size(80, 36),
-             padding: EdgeInsets.zero,
-          ),
-          child: const Text('Profile'), // Shortened for grid
-        ),
-        const SizedBox(width: 8),
-        ElevatedButton(
+    } else {
+      statusButton = ElevatedButton(
           onPressed: () => _bookWorker(context, worker, service),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black,
@@ -281,7 +273,22 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: const Text('Book'),
+        );
+    }
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min, // shrink to fit
+      children: [
+        OutlinedButton(
+          onPressed: () => _navigateToDetail(context, worker, service),
+          style: OutlinedButton.styleFrom(
+             minimumSize: const Size(80, 36),
+             padding: EdgeInsets.zero,
+          ),
+          child: const Text('Profile'), 
         ),
+        const SizedBox(width: 8),
+        statusButton,
       ],
     );
   }

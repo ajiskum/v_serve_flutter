@@ -106,6 +106,12 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> with SingleTickerPr
             Tab(text: 'My Jobs'),
           ],
         ),
+        actions: [
+           IconButton(
+             onPressed: () => Navigator.pushNamed(context, '/user_profile'), 
+             icon: const Icon(Icons.person_pin, color: Colors.white) // White since AppBar is primary color? No, theme says primary is DeepPurple. Let's check theme.
+           ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
