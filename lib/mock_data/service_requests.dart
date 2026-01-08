@@ -1,14 +1,14 @@
 import '../models/service_request.dart';
 
-final List<ServiceRequest> mockServiceRequests = [
+List<ServiceRequest> mockServiceRequests = [
   ServiceRequest(
     id: 'sr1',
     userId: 'u1',
     workerId: 'w1',
     serviceId: 's1',
     status: 'completed',
-    createdAt: DateTime.now().subtract(Duration(days: 2)),
-    completedAt: DateTime.now().subtract(Duration(days: 1)),
+    createdAt: DateTime.now().subtract(const Duration(days: 2)),
+    completedAt: DateTime.now().subtract(const Duration(days: 1)),
     notes: 'Fixed leakage in kitchen',
   ),
   ServiceRequest(
@@ -17,6 +17,10 @@ final List<ServiceRequest> mockServiceRequests = [
     workerId: 'w2',
     serviceId: 's4',
     status: 'pending',
-    createdAt: DateTime.now().subtract(Duration(hours: 4)),
+    createdAt: DateTime.now().subtract(const Duration(hours: 4)),
   ),
 ];
+
+void addServiceRequest(ServiceRequest request) {
+  mockServiceRequests.add(request);
+}
