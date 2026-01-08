@@ -34,6 +34,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
+  // Helper to get icon data based on category name
+  IconData _getCategoryIcon(String name) {
+    if (name.contains('Worker')) return Icons.engineering;
+    if (name.contains('Home')) return Icons.home_repair_service;
+    if (name.contains('Daily')) return Icons.local_shipping;
+    if (name.contains('Agriculture')) return Icons.agriculture;
+    if (name.contains('Part-time')) return Icons.timer;
+    return Icons.category;
+  }
+  
+  // Helper for gradient colors per category
+  List<Color> _getCategoryColors(int index) {
+    const gradients = [
+      [Color(0xFF6366F1), Color(0xFF4F46E5)], // Indigo
+      [Color(0xFFEC4899), Color(0xFFDB2777)], // Pink
+      [Color(0xFF10B981), Color(0xFF059669)], // Emerald
+      [Color(0xFFF59E0B), Color(0xFFD97706)], // Amber
+      [Color(0xFF8B5CF6), Color(0xFF7C3AED)], // Violet
+    ];
+    return gradients[index % gradients.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,67 +66,112 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             if (Session.currentUser != null) ...[
               Text(
                 'Hello, ${Session.currentUser.name}',
-                 style: const TextStyle(fontSize: 18),
+                 style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
               ),
-              Text(
-                '📍 $_villageName',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              Row(
+                children: [
+                  Icon(Icons.location_on, size: 12, color: Colors.white70),
+                  const SizedBox(width: 4),
+                  Text(
+                    _villageName,
+                    style: const TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
               ),
             ] else ...[
                Text(Language.get('user')),
             ]
           ],
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, '/user_profile').then((_) => setState(() {}));
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Text(
+                  Session.currentUser?.name?[0] ?? 'U',
+                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          )
+        ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Service Categories',
-            style: AppTextStyles.heading,
+          Padding(
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
+            child: Text(
+              Language.get('categories'),
+              style: AppTextStyles.heading,
+            ),
           ),
-          const SizedBox(height: 16),
-          // Changed to Vertical List of Cards for better visibility of 5 main categories
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: mockCategories.length,
-            itemBuilder: (context, index) {
-              final category = mockCategories[index];
-              return Card(
-                elevation: 2,
-                margin: const EdgeInsets.only(bottom: 16),
-                child: InkWell(
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.1,
+              ),
+              itemCount: mockCategories.length,
+              itemBuilder: (context, index) {
+                final category = mockCategories[index];
+                final colors = _getCategoryColors(index);
+                
+                return InkWell(
                   onTap: () => _navigateToServiceList(category.id, category.name),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: colors,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colors[0].withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Placeholder for Icon if asset not available, else use IconData
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(Icons.handyman, color: AppColors.primary), // Default icon
+                        Icon(
+                          _getCategoryIcon(category.name),
+                          size: 40,
+                          color: Colors.white,
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
+                        const SizedBox(height: 12),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
                             category.name,
-                            style: AppTextStyles.subHeading,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
                       ],
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );

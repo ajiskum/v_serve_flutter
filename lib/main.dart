@@ -6,6 +6,7 @@ import 'screens/admin_home_screen.dart';
 import 'screens/service_list_screen.dart';
 import 'screens/worker_list_screen.dart';
 import 'screens/worker_detail_screen.dart';
+import 'screens/user_profile_screen.dart';
 import 'utils/constants.dart';
 
 void main() {
@@ -33,6 +34,11 @@ class VServeApp extends StatelessWidget {
           foregroundColor: Colors.white,
           elevation: 0,
         ),
+        cardTheme: CardTheme(
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius)),
+          color: Colors.white,
+        ),
       ),
       initialRoute: '/',
       routes: {
@@ -43,6 +49,7 @@ class VServeApp extends StatelessWidget {
         '/service_list': (context) => const ServiceListScreen(),
         '/worker_list': (context) => const WorkerListScreen(),
         '/worker_detail': (context) => const WorkerDetailScreen(),
+        '/user_profile': (context) => const UserProfileScreen(),
       },
     );
   }

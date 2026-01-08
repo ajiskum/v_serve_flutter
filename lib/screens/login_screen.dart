@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../mock_data/admins.dart';
 import '../mock_data/users.dart';
 import '../mock_data/workers.dart';
@@ -27,14 +28,16 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       final phone = _phoneController.text.trim();
       
-      // Check if phone exists in any list
-      bool exists = false;
+      if (phone.length != 10) {
+        setState(() {
+          _errorMessage = 'Phone number must be 10 digits';
+        });
+        return;
+      }
       
-      // Check Admins
+      bool exists = false;
       if (mockAdmins.any((a) => a.phone == phone)) exists = true;
-      // Check Users
       if (!exists && mockUsers.any((u) => u.phone == phone)) exists = true;
-      // Check Workers
       if (!exists && mockWorkers.any((w) => w.phone == phone)) exists = true;
 
       if (!exists) {
@@ -57,6 +60,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _verifyOtp() {
     final otp = _otpController.text.trim();
+    if (otp.length != 6) {
+       setState(() {
+        _errorMessage = 'OTP must be 6 digits';
+      });
+      return;
+    }
+
     if (otp == '123456') {
       _login();
     } else {
@@ -103,140 +113,182 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(Language.get('app_name')),
-        actions: [
-          TextButton(
-            onPressed: _toggleLanguage,
-            child: Text(
-              Language.get('switch_language'),
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                Language.get('login'),
-                style: AppTextStyles.heading,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
-              
-              // Phone Input
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                enabled: !_isOtpSent,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.phone),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // OTP Input (Visible only after sending)
-              if (_isOtpSent)
-                TextFormField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Enter OTP',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                ),
-
-              if (_errorMessage.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text(
-                  _errorMessage,
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              const SizedBox(height: 24),
-              
-              // Action Button
-              ElevatedButton(
-                onPressed: _isOtpSent ? _verifyOtp : _sendOtp,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: Text(
-                  _isOtpSent ? 'VERIFY & LOGIN' : 'SEND OTP',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-              
-              // Edit Phone (if OTP sent)
-              if (_isOtpSent)
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _isOtpSent = false;
-                      _errorMessage = '';
-                      _otpController.clear();
-                    });
-                  },
-                  child: const Text('Change Phone Number'),
-                ),
-
-              const SizedBox(height: 32),
-              
-              // Registration Links
-              const Row(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - 50),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                   Expanded(child: Divider()),
-                   Padding(
-                     padding: EdgeInsets.symmetric(horizontal: 16),
-                     child: Text("OR REGISTER", style: TextStyle(color: Colors.grey),),
+                  // Logo / Header
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.handshake, size: 60, color: AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    Language.get('app_name'),
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.heading.copyWith(fontSize: 32, color: AppColors.primary),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Village Services at your doorstep',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.body,
+                  ),
+                  const SizedBox(height: 48),
+                  
+                  // Phone Input
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    enabled: !_isOtpSent,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
+                    decoration: InputDecoration(
+                      labelText: 'Phone Number',
+                      hintText: 'Enter 10 digit mobile number',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.phone),
+                      filled: true,
+                      fillColor: AppColors.background,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return 'Please enter phone number';
+                      if (value.length < 10) return 'Enter valid 10 digit number';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+            
+                  // OTP Input
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    height: _isOtpSent ? 80 : 0,
+                    child: _isOtpSent ? TextFormField(
+                      controller: _otpController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(6),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Enter OTP',
+                        hintText: '123456',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: const Icon(Icons.lock),
+                         filled: true,
+                        fillColor: AppColors.background,
+                      ),
+                    ) : null,
+                  ),
+            
+                  if (_errorMessage.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  
+                  // Main Button
+                  ElevatedButton(
+                    onPressed: _isOtpSent ? _verifyOtp : _sendOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                    ),
+                    child: Text(
+                      _isOtpSent ? 'VERIFY & LOGIN' : 'SEND OTP',
+                      style: AppTextStyles.button,
+                    ),
+                  ),
+                  
+                  if (_isOtpSent)
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _isOtpSent = false;
+                          _errorMessage = '';
+                          _otpController.clear();
+                        });
+                      },
+                      child: const Text('Change Phone Number'),
+                    ),
+            
+                  const SizedBox(height: 48),
+                  
+                  // Registration Section
+                  const Row(
+                    children: [
+                       Expanded(child: Divider()),
+                       Padding(
+                         padding: EdgeInsets.symmetric(horizontal: 16),
+                         child: Text("NEW USER?", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),),
+                       ),
+                       Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const UserRegistrationScreen()));
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            side: const BorderSide(color: AppColors.primary),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('User Register'),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                             Navigator.push(context, MaterialPageRoute(builder: (context) => const WorkerRegistrationScreen()));
+                          },
+                           style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                             side: const BorderSide(color: AppColors.secondary),
+                             foregroundColor: AppColors.secondary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Worker Register'),
+                        ),
+                      ),
+                    ],
+                  ),
+                   const SizedBox(height: 20),
+                   TextButton.icon(
+                      onPressed: _toggleLanguage,
+                      icon: const Icon(Icons.language),
+                      label: Text(Language.get('switch_language')),
                    ),
-                   Expanded(child: Divider()),
                 ],
               ),
-              const SizedBox(height: 24),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const UserRegistrationScreen()),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text('Register as User'),
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const WorkerRegistrationScreen()),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                   padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text('Register as Worker'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
