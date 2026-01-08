@@ -4,6 +4,7 @@ import '../utils/constants.dart';
 import '../mock_data/users.dart';
 import '../mock_data/workers.dart';
 import '../mock_data/admins.dart';
+import '../utils/session.dart';
 import 'user_registration_screen.dart';
 import 'worker_registration_screen.dart';
 
@@ -34,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       for (var admin in mockAdmins) {
         if (admin.phone == phone) {
+           Session.currentUser = admin;
            Navigator.pushNamedAndRemoveUntil(context, '/admin_home', (route) => false);
            return;
         }
@@ -41,6 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       for (var user in mockUsers) {
         if (user.phone == phone) {
+           Session.currentUser = user;
            Navigator.pushNamedAndRemoveUntil(context, '/user_home', (route) => false);
            return;
         }
@@ -48,6 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
        for (var worker in mockWorkers) {
         if (worker.phone == phone) {
+           Session.currentUser = worker;
            Navigator.pushNamedAndRemoveUntil(context, '/worker_home', (route) => false);
            return;
         }

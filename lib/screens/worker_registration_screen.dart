@@ -5,6 +5,7 @@ import '../mock_data/villages.dart';
 import '../mock_data/workers.dart';
 import '../mock_data/categories.dart';
 import '../utils/constants.dart';
+import '../utils/session.dart';
 
 class WorkerRegistrationScreen extends StatefulWidget {
   const WorkerRegistrationScreen({super.key});
@@ -41,6 +42,7 @@ class _WorkerRegistrationScreenState extends State<WorkerRegistrationScreen> {
       );
 
       addWorker(newWorker);
+      Session.currentUser = newWorker;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registration Successful! Logging in...')),

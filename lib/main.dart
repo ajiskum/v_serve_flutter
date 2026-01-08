@@ -3,6 +3,9 @@ import 'screens/login_screen.dart';
 import 'screens/user_home_screen.dart';
 import 'screens/worker_home_screen.dart';
 import 'screens/admin_home_screen.dart';
+import 'screens/service_list_screen.dart';
+import 'screens/worker_list_screen.dart';
+import 'screens/worker_detail_screen.dart';
 import 'utils/constants.dart';
 
 void main() {
@@ -37,6 +40,9 @@ class VServeApp extends StatelessWidget {
         '/user_home': (context) => const UserHomeScreen(),
         '/worker_home': (context) => const WorkerHomeScreen(),
         '/admin_home': (context) => const AdminHomeScreen(),
+        '/service_list': (context) => const ServiceListScreen(),
+        '/worker_list': (context) => const WorkerListScreen(),
+        '/worker_detail': (context) => const WorkerDetailScreen(),
       },
     );
   }

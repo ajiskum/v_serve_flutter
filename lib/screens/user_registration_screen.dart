@@ -4,6 +4,7 @@ import '../models/village.dart';
 import '../mock_data/villages.dart';
 import '../mock_data/users.dart';
 import '../utils/constants.dart';
+import '../utils/session.dart';
 
 class UserRegistrationScreen extends StatefulWidget {
   const UserRegistrationScreen({super.key});
@@ -28,6 +29,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
       );
 
       addUser(newUser);
+      Session.currentUser = newUser;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registration Successful! Logging in...')),
